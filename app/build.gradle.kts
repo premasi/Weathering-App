@@ -16,7 +16,7 @@ android {
         versionCode = 1
         versionName = "1.0"
         buildConfigField("String", "BASE_URL", "\"https://api.openweathermap.org/\"")
-        buildConfigField("String", "API_KEY", "\"ed60fcfbd110ee65c7150605ea8aceeal\"")
+        buildConfigField("String", "API_KEY", "\"ed60fcfbd110ee65c7150605ea8aceea\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
@@ -62,6 +62,9 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.46")
     kapt("com.google.dagger:hilt-android-compiler:2.46")
 
+    // Hilt Navigation Compose
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+
     //view model compose
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.4")
 
@@ -76,7 +79,7 @@ dependencies {
     //retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
     //room
     val room_version = "2.6.1"

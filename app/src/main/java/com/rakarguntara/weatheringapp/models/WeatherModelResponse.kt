@@ -83,7 +83,7 @@ data class ListItem(
 	val dt: Int? = null,
 
 	@field:SerializedName("pop")
-	val pop: Int? = null,
+	val pop: Double? = null,
 
 	@field:SerializedName("sunset")
 	val sunset: Int? = null,
