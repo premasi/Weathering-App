@@ -11,4 +11,8 @@
     <color name="sage2">#CADABF</color>
     <color name="brown">#BC9F8B</color>
     <color name="beige">#E7E8D8</color>
+    <color name="gray">#EEEEEE</color>
+    <color name="navy">#201E43</color>
+    <color name="blue">#134B70</color>
+    <color name="teal">#508C9B</color>
 </resources>

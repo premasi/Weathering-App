@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
 fun WeatherApp(){
     WeatheringAppTheme {
         Surface(contentColor = MaterialTheme.colorScheme.background,
-            color = colorResource(R.color.beige),
+            color = colorResource(R.color.gray),
             modifier = Modifier.fillMaxSize()
             ) {
 

@@ -58,7 +58,7 @@ fun WeatherSplashScreen(navController: NavHostController) {
         color = Color.Transparent,
         shape = CircleShape,
         border = BorderStroke(width = 2.dp,
-            color = colorResource(R.color.sage2)
+            color = colorResource(R.color.navy)
             )
     ) {
         Column(
@@ -74,7 +74,7 @@ fun WeatherSplashScreen(navController: NavHostController) {
                 modifier = Modifier.size(130.dp))
             Text("Weathering With App", style = TextStyle(
                 fontSize = 16.sp,
-                color = colorResource(R.color.sage),
+                color = colorResource(R.color.navy),
                 fontWeight = FontWeight.Bold,
 
             ),
