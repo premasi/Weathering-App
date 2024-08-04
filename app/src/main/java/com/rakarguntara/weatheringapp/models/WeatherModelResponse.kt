@@ -17,7 +17,7 @@ data class WeatherModelResponse(
 	val message: Double? = null,
 
 	@field:SerializedName("list")
-	val list: List<ListItem?>? = null
+	val list: List<ListItem>
 )
 
 data class City(

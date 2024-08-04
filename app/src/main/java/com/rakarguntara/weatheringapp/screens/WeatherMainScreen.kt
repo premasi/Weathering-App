@@ -5,14 +5,18 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -37,9 +41,11 @@ import com.rakarguntara.weatheringapp.models.ListItem
 import com.rakarguntara.weatheringapp.models.WeatherModelResponse
 import com.rakarguntara.weatheringapp.network.ResponseState
 import com.rakarguntara.weatheringapp.utils.formatDate
+import com.rakarguntara.weatheringapp.utils.formatDateTime
 import com.rakarguntara.weatheringapp.utils.formatDecimals
 import com.rakarguntara.weatheringapp.viewmodels.MainViewModel
 import com.rakarguntara.weatheringapp.widgets.WeatherAppBar
+import com.rakarguntara.weatheringapp.widgets.WeatherWeekListItem
 
 @Composable
 fun WeatherMainScreen(navController: NavController, mainViewModel: MainViewModel){
@@ -78,7 +84,7 @@ fun WeatherMainScreenScaffoldContent(data: WeatherModelResponse, padding: Paddin
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = formatDate(data.list!![0]?.dt!!),
+        Text(text = formatDate(data.list[0].dt!!),
             style = TextStyle(
                 fontWeight = FontWeight.Medium,
                 fontSize = 12.sp,
@@ -94,18 +100,18 @@ fun WeatherMainScreenScaffoldContent(data: WeatherModelResponse, padding: Paddin
                 horizontalAlignment = Alignment.CenterHorizontally) {
                 AsyncImage(
                     modifier = Modifier.size(80.dp),
-                    model = BuildConfig.IMAGE_BASE_URL+ data.list[0]?.weather!![0]?.icon + ".png",
+                    model = BuildConfig.IMAGE_BASE_URL+ data.list[0].weather!![0]?.icon + ".png",
                     contentDescription = null
                 )
                 Text(
-                    formatDecimals(data.list[0]?.temp?.day!!) + "\u00B0",
+                    formatDecimals(data.list[0].temp?.day!!) + "\u00B0",
                     modifier = Modifier.padding(bottom = 4.dp),
                     style = TextStyle(
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 24.sp
                 ))
                 Text(
-                    data.list[0]?.weather?.get(0)?.main!!, style = TextStyle(
+                    data.list[0].weather?.get(0)?.main!!, style = TextStyle(
                     fontStyle = FontStyle.Italic,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium
@@ -114,8 +120,77 @@ fun WeatherMainScreenScaffoldContent(data: WeatherModelResponse, padding: Paddin
             }
         }
         HumidityWindPressureRow(data.list[0])
-        Divider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+        TimeRow(data.list[0])
+        WeatherMainScreenColumnList(data)
 
+    }
+}
+
+@Composable
+fun WeatherMainScreenColumnList(data: WeatherModelResponse){
+    Column(
+        modifier = Modifier.padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ){
+        Text("This Week", style = TextStyle(
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 16.sp,
+            color = colorResource(R.color.navy)
+        ))
+        Surface(modifier = Modifier.fillMaxWidth().fillMaxHeight().padding(vertical = 8.dp),
+            color = Color.LightGray,
+            shape = RoundedCornerShape(16.dp)
+        ){
+            LazyColumn(modifier = Modifier.padding(vertical = 8.dp),
+                contentPadding = PaddingValues(1.dp)
+            ) {
+                items(items = data.list){ item->
+                    WeatherWeekListItem(item)
+                }
+            }
+        }
+
+    }
+}
+
+@Composable
+fun TimeRow(data: ListItem?){
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row(modifier = Modifier.padding(4.dp)) {
+            Icon(painter = painterResource(R.drawable.ic_sunrise), contentDescription = "sunrise",
+                modifier = Modifier.size(20.dp),
+                tint = colorResource(R.color.teal)
+            )
+            Text(
+                formatDateTime(data?.sunrise!!), style = TextStyle(
+                fontWeight = FontWeight.Normal,
+                fontSize = 14.sp,
+                color = colorResource(R.color.navy)
+            )
+            )
+
+        }
+
+        Row(modifier = Modifier.padding(4.dp)) {
+            Icon(painter = painterResource(R.drawable.ic_sunset), contentDescription = "sunrise",
+                modifier = Modifier.size(20.dp),
+                tint = colorResource(R.color.teal)
+            )
+            Text(
+                formatDateTime(data?.sunset!!), style = TextStyle(
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 14.sp,
+                    color = colorResource(R.color.navy)
+                )
+            )
+
+        }
     }
 }
 
@@ -134,34 +209,34 @@ fun HumidityWindPressureRow(data: ListItem?) {
             Text(data?.humidity.toString()+"%", style = TextStyle(
                 fontWeight = FontWeight.Normal,
                 fontSize = 14.sp,
-                color = colorResource(R.color.teal)
+                color = colorResource(R.color.navy)
             )
             )
         }
 
         Row(modifier = Modifier.padding(4.dp)) {
             Icon(painter = painterResource(R.drawable.ic_pressure), contentDescription = "pressure",
-                modifier = Modifier.size(20.dp),
+                modifier = Modifier.size(30.dp),
                 tint = colorResource(R.color.teal)
             )
             Text(data?.pressure.toString()+"psi", style = TextStyle(
                 fontWeight = FontWeight.Normal,
                 fontSize = 14.sp,
-                color = colorResource(R.color.teal)
+                color = colorResource(R.color.navy)
             )
             )
         }
 
         Row(modifier = Modifier.padding(4.dp)) {
             Icon(painter = painterResource(R.drawable.ic_wind), contentDescription = "wind",
-                modifier = Modifier.size(20.dp),
+                modifier = Modifier.size(30.dp),
                 tint = colorResource(R.color.teal)
             )
             Text(
                 formatDecimals(data?.speed!!)+"mph", style = TextStyle(
                 fontWeight = FontWeight.Normal,
                 fontSize = 14.sp,
-                color = colorResource(R.color.teal)
+                color = colorResource(R.color.navy)
             )
             )
         }
