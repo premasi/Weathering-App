@@ -1,5 +1,6 @@
 package com.rakarguntara.weatheringapp.screens
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -39,6 +40,7 @@ import com.rakarguntara.weatheringapp.BuildConfig
 import com.rakarguntara.weatheringapp.R
 import com.rakarguntara.weatheringapp.models.ListItem
 import com.rakarguntara.weatheringapp.models.WeatherModelResponse
+import com.rakarguntara.weatheringapp.navigation.WeatherScreens
 import com.rakarguntara.weatheringapp.network.ResponseState
 import com.rakarguntara.weatheringapp.utils.formatDate
 import com.rakarguntara.weatheringapp.utils.formatDateTime
@@ -48,11 +50,16 @@ import com.rakarguntara.weatheringapp.widgets.WeatherAppBar
 import com.rakarguntara.weatheringapp.widgets.WeatherWeekListItem
 
 @Composable
-fun WeatherMainScreen(navController: NavController, mainViewModel: MainViewModel){
+fun WeatherMainScreen(
+    navController: NavController,
+    mainViewModel: MainViewModel,
+    cityValue: String
+){
+    Log.d("City Value", "WeatherMainScreen: $cityValue")
     val forecastDailyData = produceState<ResponseState<WeatherModelResponse, Boolean, Exception>>(
         initialValue = ResponseState(loading = true)
     ){
-        value = mainViewModel.getForecastDaily("Jakarta")
+        value = mainViewModel.getForecastDaily(cityValue)
     }.value
 
     if(forecastDailyData.loading == true){
@@ -70,7 +77,13 @@ fun WeatherMainScreenScaffold(navController: NavController, data: WeatherModelRe
     Scaffold(
         containerColor = colorResource(R.color.gray),
         topBar = {
-            WeatherAppBar(title = "${data.city?.name!!}, ${data.city.country}", icon = Icons.AutoMirrored.Filled.ArrowBack ,navController = navController, elevation = 4.dp) {  }
+            WeatherAppBar(title = "${data.city?.name!!}, ${data.city.country}",
+                icon = Icons.AutoMirrored.Filled.ArrowBack ,
+                navController = navController,
+                elevation = 4.dp,
+                onAddActionClicked = {
+                    navController.navigate(WeatherScreens.SearchScreen.name)
+                })
         }){
         WeatherMainScreenScaffoldContent(data, it)
     }
@@ -162,7 +175,9 @@ fun TimeRow(data: ListItem?){
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Row(modifier = Modifier.padding(4.dp)) {
+        Row(modifier = Modifier.padding(4.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically) {
             Icon(painter = painterResource(R.drawable.ic_sunrise), contentDescription = "sunrise",
                 modifier = Modifier.size(20.dp),
                 tint = colorResource(R.color.teal)
@@ -177,8 +192,10 @@ fun TimeRow(data: ListItem?){
 
         }
 
-        Row(modifier = Modifier.padding(4.dp)) {
-            Icon(painter = painterResource(R.drawable.ic_sunset), contentDescription = "sunrise",
+        Row(modifier = Modifier.padding(4.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically) {
+            Icon(painter = painterResource(R.drawable.ic_sunset), contentDescription = "sunset",
                 modifier = Modifier.size(20.dp),
                 tint = colorResource(R.color.teal)
             )
@@ -201,7 +218,9 @@ fun HumidityWindPressureRow(data: ListItem?) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Row(modifier = Modifier.padding(4.dp)) {
+        Row(modifier = Modifier.padding(4.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically) {
             Icon(painter = painterResource(R.drawable.ic_humidity), contentDescription = "humidity",
                 modifier = Modifier.size(20.dp),
                 tint = colorResource(R.color.teal)
@@ -214,7 +233,9 @@ fun HumidityWindPressureRow(data: ListItem?) {
             )
         }
 
-        Row(modifier = Modifier.padding(4.dp)) {
+        Row(modifier = Modifier.padding(4.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically) {
             Icon(painter = painterResource(R.drawable.ic_pressure), contentDescription = "pressure",
                 modifier = Modifier.size(30.dp),
                 tint = colorResource(R.color.teal)
@@ -227,7 +248,9 @@ fun HumidityWindPressureRow(data: ListItem?) {
             )
         }
 
-        Row(modifier = Modifier.padding(4.dp)) {
+        Row(modifier = Modifier.padding(4.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically) {
             Icon(painter = painterResource(R.drawable.ic_wind), contentDescription = "wind",
                 modifier = Modifier.size(30.dp),
                 tint = colorResource(R.color.teal)
