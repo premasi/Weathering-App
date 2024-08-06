@@ -48,7 +48,12 @@ fun WeatherSplashScreen(navController: NavHostController) {
         )
 
         delay(1000)
-        navController.navigate("${WeatherScreens.MainScreen.name}/Jakarta")
+        navController.navigate("${WeatherScreens.MainScreen.name}/Jakarta"){
+            popUpTo(navController.graph.startDestinationId){
+                inclusive = true
+            }
+        }
+
     })
 
     Surface(modifier = Modifier

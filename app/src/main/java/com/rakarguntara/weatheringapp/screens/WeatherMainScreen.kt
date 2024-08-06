@@ -83,6 +83,9 @@ fun WeatherMainScreenScaffold(navController: NavController, data: WeatherModelRe
                 elevation = 4.dp,
                 onAddActionClicked = {
                     navController.navigate(WeatherScreens.SearchScreen.name)
+                },
+                onButtonClicked = {
+                    navController.popBackStack()
                 })
         }){
         WeatherMainScreenScaffoldContent(data, it)

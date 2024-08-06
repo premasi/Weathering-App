@@ -41,7 +41,12 @@ fun WeatherSearchScreen(navController: NavController) {
             ) {
                 SearchBarComponent(onSearch = { query ->
                     Log.d("Search Query", "WeatherSearchScreen: $query")
-                    navController.navigate("${WeatherScreens.MainScreen.name}/$query")
+                    if(query == "Jakarta" || query == "jakarta"){
+                        navController.popBackStack()
+                    } else {
+                        navController.navigate("${WeatherScreens.MainScreen.name}/$query")
+                    }
+
                 })
             }
         }

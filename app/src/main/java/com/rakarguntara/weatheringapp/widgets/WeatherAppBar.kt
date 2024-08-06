@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -29,11 +30,15 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
@@ -41,9 +46,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.rakarguntara.weatheringapp.R
+import com.rakarguntara.weatheringapp.models.FavoriteModelLocalResponse
 import com.rakarguntara.weatheringapp.navigation.WeatherScreens
+import com.rakarguntara.weatheringapp.viewmodels.FavoriteViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,6 +61,7 @@ fun WeatherAppBar(
     isMainScreen: Boolean = true,
     elevation : Dp = 8.dp,
     navController: NavController,
+    favoriteViewModel: FavoriteViewModel = hiltViewModel(),
     onAddActionClicked: () -> Unit = {},
     onButtonClicked: () -> Unit = {}
 ) {
@@ -63,6 +72,13 @@ fun WeatherAppBar(
     if(showDialogState.value){
         showSettingDialogMenu(showDialogState = showDialogState, navController = navController)
     }
+
+    val favorite by favoriteViewModel.fav.collectAsState()
+
+    LaunchedEffect(title.split(",")[0]) {
+        favoriteViewModel.getFavoriteById(title.split(",")[0])
+    }
+
 
     CenterAlignedTopAppBar(
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -96,8 +112,77 @@ fun WeatherAppBar(
         },
         navigationIcon = {
             if(icon != null){
+                val isFavorite = favorite != null
                 if(isMainScreen){
-                    Box{}
+                    if(title == "Jakarta, ID"){
+                        Icon(
+                            imageVector =
+                            if(isFavorite){
+                                Icons.Default.Favorite
+                            } else {
+                                Icons.Default.FavoriteBorder
+                            },
+                            contentDescription = "favorite",
+                            tint =
+                            if(isFavorite){
+                                Color.Red
+                            } else {
+                                colorResource(R.color.gray)
+                            },
+                            modifier = Modifier
+                                .padding(start = 16.dp)
+                                .clickable {
+                                    if(!isFavorite){
+                                        favoriteViewModel.insertFavorite(FavoriteModelLocalResponse(
+                                            city = title.split(",")[0],
+                                            country = title.split(",")[1]
+
+                                        ))
+                                    } else {
+                                        favoriteViewModel.deleteFavoriteById(title.split(",")[0])
+                                    }
+                                }
+                        )
+                    } else {
+                        Row(
+                            modifier = Modifier.padding(start = 16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween) {
+                            Icon(imageVector = icon, contentDescription = null, tint = colorResource(R.color.gray),
+                                modifier = Modifier
+                                    .clickable {
+                                        onButtonClicked.invoke()
+                                    })
+                            Icon(imageVector =
+                                if(isFavorite){
+                                    Icons.Default.Favorite
+                                } else {
+                                    Icons.Default.FavoriteBorder
+                                }
+                            , contentDescription = "favorite",
+                                tint =
+                                if(isFavorite){
+                                    Color.Red
+                                } else {
+                                    colorResource(R.color.gray)
+                                },
+                                modifier = Modifier
+                                    .padding(start = 16.dp)
+                                    .clickable {
+                                        if(!isFavorite){
+                                            favoriteViewModel.insertFavorite(FavoriteModelLocalResponse(
+                                                city = title.split(",")[0],
+                                                country = title.split(",")[1]
+
+                                            ))
+                                        } else {
+                                            favoriteViewModel.deleteFavoriteById(title.split(",")[0])
+                                        }
+                                    }
+                            )
+                        }
+
+                    }
                 } else {
                     Icon(imageVector = icon, contentDescription = null, tint = colorResource(R.color.gray),
                         modifier = Modifier
