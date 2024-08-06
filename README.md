@@ -15,7 +15,7 @@ Weathering App is an application that shows the weather conditions in various ci
   - Open the app
   - Click the "search" icon
   - Write the city name
-  - The application will show the weather 
+  - The application will show the weather condition
  
 ## Dependecies <br />
   - Hilt Dagger version 2.46
