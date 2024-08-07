@@ -1,6 +1,8 @@
 package com.rakarguntara.weatheringapp.widgets
 
+import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -30,16 +32,15 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -70,14 +71,14 @@ fun WeatherAppBar(
     }
 
     if(showDialogState.value){
-        showSettingDialogMenu(showDialogState = showDialogState, navController = navController)
+        ShowSettingDialogMenu(showDialogState = showDialogState, navController = navController)
     }
 
-    val favorite by favoriteViewModel.fav.collectAsState()
-
-    LaunchedEffect(title.split(",")[0]) {
-        favoriteViewModel.getFavoriteById(title.split(",")[0])
+    val showIt = remember {
+        mutableStateOf(false)
     }
+
+    val context = LocalContext.current
 
 
     CenterAlignedTopAppBar(
@@ -112,19 +113,21 @@ fun WeatherAppBar(
         },
         navigationIcon = {
             if(icon != null){
-                val isFavorite = favorite != null
+                val isFavorite = favoriteViewModel.favList.collectAsState().value.filter { item ->
+                    (item.city == title.split(",")[0])
+                }
                 if(isMainScreen){
                     if(title == "Jakarta, ID"){
                         Icon(
                             imageVector =
-                            if(isFavorite){
+                            if(isFavorite.isNotEmpty()){
                                 Icons.Default.Favorite
                             } else {
                                 Icons.Default.FavoriteBorder
                             },
                             contentDescription = "favorite",
                             tint =
-                            if(isFavorite){
+                            if(isFavorite.isNotEmpty()){
                                 Color.Red
                             } else {
                                 colorResource(R.color.gray)
@@ -132,14 +135,15 @@ fun WeatherAppBar(
                             modifier = Modifier
                                 .padding(start = 16.dp)
                                 .clickable {
-                                    if(!isFavorite){
+                                    if(isFavorite.isEmpty()){
                                         favoriteViewModel.insertFavorite(FavoriteModelLocalResponse(
                                             city = title.split(",")[0],
                                             country = title.split(",")[1]
-
-                                        ))
+                                        )).run { showIt.value = true }
                                     } else {
-                                        favoriteViewModel.deleteFavoriteById(title.split(",")[0])
+                                        favoriteViewModel.deleteFavoriteById(title.split(",")[0]).run {
+                                            showIt.value = false
+                                        }
                                     }
                                 }
                         )
@@ -154,14 +158,14 @@ fun WeatherAppBar(
                                         onButtonClicked.invoke()
                                     })
                             Icon(imageVector =
-                                if(isFavorite){
+                                if(isFavorite.isNotEmpty()){
                                     Icons.Default.Favorite
                                 } else {
                                     Icons.Default.FavoriteBorder
                                 }
                             , contentDescription = "favorite",
                                 tint =
-                                if(isFavorite){
+                                if(isFavorite.isNotEmpty()){
                                     Color.Red
                                 } else {
                                     colorResource(R.color.gray)
@@ -169,14 +173,16 @@ fun WeatherAppBar(
                                 modifier = Modifier
                                     .padding(start = 16.dp)
                                     .clickable {
-                                        if(!isFavorite){
+                                        if(isFavorite.isEmpty()){
                                             favoriteViewModel.insertFavorite(FavoriteModelLocalResponse(
                                                 city = title.split(",")[0],
                                                 country = title.split(",")[1]
 
-                                            ))
+                                            )).run { showIt.value = true }
                                         } else {
-                                            favoriteViewModel.deleteFavoriteById(title.split(",")[0])
+                                            favoriteViewModel.deleteFavoriteById(title.split(",")[0]).run {
+                                                showIt.value = false
+                                            }
                                         }
                                     }
                             )
@@ -191,6 +197,9 @@ fun WeatherAppBar(
                                 onButtonClicked.invoke()
                             })
                 }
+                ShowToast(context = context, showIt)
+                showIt.value = false
+
 
             }
         }
@@ -198,7 +207,14 @@ fun WeatherAppBar(
 }
 
 @Composable
-fun showSettingDialogMenu(showDialogState: MutableState<Boolean>, navController: NavController) {
+fun ShowToast(context: Context, showIt: MutableState<Boolean>) {
+    if(showIt.value){
+        Toast.makeText(context, "Added to favorites", Toast.LENGTH_SHORT).show()
+    }
+}
+
+@Composable
+fun ShowSettingDialogMenu(showDialogState: MutableState<Boolean>, navController: NavController) {
     val expanded = remember {
         mutableStateOf(true)
     }
