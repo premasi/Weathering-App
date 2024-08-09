@@ -36,7 +36,7 @@ fun WeatherNavigation() {
         ){ navArg ->
             navArg.arguments?.getString("city").let { cityValue ->
                 val mainViewModel = hiltViewModel<MainViewModel>()
-                WeatherMainScreen(navController, mainViewModel, cityValue!!)
+                WeatherMainScreen(navController = navController,mainViewModel = mainViewModel, cityValue =  cityValue!!)
             }
         }
 

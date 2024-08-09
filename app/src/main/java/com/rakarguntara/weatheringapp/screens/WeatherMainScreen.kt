@@ -1,6 +1,5 @@
 package com.rakarguntara.weatheringapp.screens
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,7 +22,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,6 +36,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.rakarguntara.weatheringapp.BuildConfig
@@ -46,6 +49,7 @@ import com.rakarguntara.weatheringapp.utils.formatDate
 import com.rakarguntara.weatheringapp.utils.formatDateTime
 import com.rakarguntara.weatheringapp.utils.formatDecimals
 import com.rakarguntara.weatheringapp.viewmodels.MainViewModel
+import com.rakarguntara.weatheringapp.viewmodels.SettingViewModel
 import com.rakarguntara.weatheringapp.widgets.WeatherAppBar
 import com.rakarguntara.weatheringapp.widgets.WeatherWeekListItem
 
@@ -53,27 +57,43 @@ import com.rakarguntara.weatheringapp.widgets.WeatherWeekListItem
 fun WeatherMainScreen(
     navController: NavController,
     mainViewModel: MainViewModel,
+    settingViewModel: SettingViewModel = hiltViewModel(),
     cityValue: String
 ){
-    Log.d("City Value", "WeatherMainScreen: $cityValue")
-    val forecastDailyData = produceState<ResponseState<WeatherModelResponse, Boolean, Exception>>(
-        initialValue = ResponseState(loading = true)
-    ){
-        value = mainViewModel.getForecastDaily(cityValue)
-    }.value
 
-    if(forecastDailyData.loading == true){
-        CircularProgressIndicator(
-            modifier = Modifier.background(Color.Transparent),
-            color = colorResource(R.color.navy)
-        )
-    } else if (forecastDailyData.data != null){
-        WeatherMainScreenScaffold(navController, forecastDailyData.data!!)
+    val curCity: String = if (cityValue.isBlank()) "Jakarta" else cityValue
+    val unitFromDB = settingViewModel.unitList.collectAsState().value
+    val unit = remember {
+        mutableStateOf("imperial")
     }
+    val isImperial = remember {
+        mutableStateOf(false)
+    }
+
+    if(unitFromDB.isNotEmpty()){
+        unit.value = unitFromDB[0].unit.split(" ")[0].lowercase()
+        isImperial.value = unit.value == "imperial"
+        val forecastDailyData = produceState<ResponseState<WeatherModelResponse, Boolean, Exception>>(
+            initialValue = ResponseState(loading = true)
+        ){
+            value = mainViewModel.getForecastDaily(city = curCity, units = unit.value)
+        }.value
+
+        if(forecastDailyData.loading == true){
+            CircularProgressIndicator(
+                modifier = Modifier.background(Color.Transparent),
+                color = colorResource(R.color.navy)
+            )
+        } else if (forecastDailyData.data != null){
+            WeatherMainScreenScaffold(navController, forecastDailyData.data!!, isImperial = isImperial.value)
+        }
+    }
+
+
 }
 
 @Composable
-fun WeatherMainScreenScaffold(navController: NavController, data: WeatherModelResponse) {
+fun WeatherMainScreenScaffold(navController: NavController, data: WeatherModelResponse, isImperial: Boolean) {
     Scaffold(
         containerColor = colorResource(R.color.gray),
         topBar = {
@@ -88,12 +108,16 @@ fun WeatherMainScreenScaffold(navController: NavController, data: WeatherModelRe
                     navController.popBackStack()
                 })
         }){
-        WeatherMainScreenScaffoldContent(data, it)
+        WeatherMainScreenScaffoldContent(data, it, isImperial)
     }
 }
 
 @Composable
-fun WeatherMainScreenScaffoldContent(data: WeatherModelResponse, padding: PaddingValues) {
+fun WeatherMainScreenScaffoldContent(
+    data: WeatherModelResponse,
+    padding: PaddingValues,
+    isImperial: Boolean
+) {
     Column(
         modifier = Modifier.padding(padding).fillMaxWidth()
             .padding(vertical = 16.dp),
@@ -135,7 +159,7 @@ fun WeatherMainScreenScaffoldContent(data: WeatherModelResponse, padding: Paddin
                 )
             }
         }
-        HumidityWindPressureRow(data.list[0])
+        HumidityWindPressureRow(data.list[0], isImperial)
         HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
         TimeRow(data.list[0])
         WeatherMainScreenColumnList(data)
@@ -215,7 +239,7 @@ fun TimeRow(data: ListItem?){
 }
 
 @Composable
-fun HumidityWindPressureRow(data: ListItem?) {
+fun HumidityWindPressureRow(data: ListItem?, isImperial: Boolean) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -259,7 +283,7 @@ fun HumidityWindPressureRow(data: ListItem?) {
                 tint = colorResource(R.color.teal)
             )
             Text(
-                formatDecimals(data?.speed!!)+"mph", style = TextStyle(
+                formatDecimals(data?.speed!!)+if(isImperial) "mph" else "m/s", style = TextStyle(
                 fontWeight = FontWeight.Normal,
                 fontSize = 14.sp,
                 color = colorResource(R.color.navy)

@@ -16,6 +16,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -41,15 +42,21 @@ fun WeatherSettingsScreen(navController: NavController,
         mutableStateOf(false)
     }
     val measurementUnits = listOf("Imperial (F)", "Metric (C)")
+    val choiceFromDb = settingViewModel.unitList.collectAsState().value
+    val defaultChoice = if(choiceFromDb.isEmpty()) measurementUnits[0]
+    else choiceFromDb[0].unit
     val choiceState = remember {
-        mutableStateOf("")
+        mutableStateOf(defaultChoice)
     }
     Scaffold(topBar = {
         WeatherAppBar(
             title = "Settings",
             isMainScreen = false,
             icon = Icons.AutoMirrored.Filled.ArrowBack,
-            navController = navController
+            navController = navController,
+            onButtonClicked = {
+                navController.popBackStack()
+            }
         )
     }) {
         Surface(modifier = Modifier.padding(it)
